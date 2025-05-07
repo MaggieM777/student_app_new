@@ -36,7 +36,7 @@ student_points = st.number_input("Enter Points", min_value=0)
 # Падащо меню за избор на фирма за студентите
 if st.session_state.firms:
     student_choices = []
-    for i in range(5):  # Предполага се, че студентът може да избере до 5 фирми
+    for i in range(len(st.session_state.firms)):  # Променяме тук броя на падащите менюта
         firm_choice = st.selectbox(f"Select Firm Choice {i+1}", options=[firm["name"] for firm in st.session_state.firms], key=f"choice_{i}")
         student_choices.append(firm_choice)
 
@@ -82,3 +82,4 @@ if st.button("Classify Students"):
     st.subheader("Results")
     for entry in classified:
         st.write(f"{entry['name']} - Assigned to {entry['firm']}")
+
