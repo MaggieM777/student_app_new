@@ -1,75 +1,81 @@
 import streamlit as st
 
-# Списъци за студентите, фирмите и резултатите
+# Списъци за съхранение на добавените студенти и фирми
 students = []
 firms = []
 
-# Функция за добавяне на студент
-def add_student():
-    name = st.text_input("Student Name")
-    points = st.number_input("Points", min_value=0)
-    choices = []
-    for i in range(len(firms)):
-        choice = st.selectbox(f"Choice for Firm {i+1}", [firm['name'] for firm in firms])
-        choices.append(choice)
-    
-    if st.button("Add Student"):
-        students.append({"name": name, "points": points, "choices": choices})
-        st.success(f"Student {name} added!")
+# Заглавие на приложението
+st.title("Student-Firm Application")
 
-# Функция за добавяне на фирма
-def add_firm():
-    name = st.text_input("Firm Name")
-    quota = st.number_input("Quota", min_value=1)
-    
-    if st.button("Add Firm"):
-        firms.append({"name": name, "quota": quota})
-        st.success(f"Firm {name} added!")
+# Формата за добавяне на фирми
+st.header("Add Firm")
+firm_name = st.text_input("Enter Firm Name")
+firm_quota = st.number_input("Enter Quota", min_value=1)
 
-# Функция за класифициране на студентите
-def classify_students():
-    sorted_students = sorted(students, key=lambda x: x['points'], reverse=True)
-    
-    firm_slots = {firm['name']: firm['quota'] for firm in firms}
-    placements = []
-    
-    for student in sorted_students:
+if st.button("Add Firm"):
+    if firm_name and firm_quota:
+        firms.append({"name": firm_name, "quota": firm_quota})
+        st.success(f"Firm {firm_name} added successfully!")
+    else:
+        st.error("Please enter both Firm Name and Quota.")
+
+# Показване на добавените фирми
+if firms:
+    st.subheader("Added Firms")
+    for firm in firms:
+        st.write(f"{firm['name']} - Quota: {firm['quota']}")
+
+# Формата за добавяне на студенти
+st.header("Add Student")
+student_name = st.text_input("Enter Student Name")
+student_points = st.number_input("Enter Points", min_value=0)
+
+# Падащо меню за избор на фирма за студентите
+if firms:
+    student_choices = []
+    for i in range(5):  # Предполага се, че студентът може да избере до 5 фирми
+        firm_choice = st.selectbox(f"Select Firm Choice {i+1}", options=[firm["name"] for firm in firms], key=f"choice_{i}")
+        student_choices.append(firm_choice)
+
+if st.button("Add Student"):
+    if student_name and student_points and student_choices:
+        students.append({
+            "name": student_name,
+            "points": student_points,
+            "choices": student_choices
+        })
+        st.success(f"Student {student_name} added successfully!")
+    else:
+        st.error("Please enter Student Name, Points and make selections for at least one Firm.")
+
+# Показване на добавените студенти
+if students:
+    st.subheader("Added Students")
+    for student in students:
+        st.write(f"{student['name']} - Points: {student['points']}")
+        st.write(f"Choices: {', '.join(student['choices'])}")
+
+# Логика за класиране на студентите
+if st.button("Classify Students"):
+    # Сортиране на студентите по точки
+    students_sorted = sorted(students, key=lambda x: x["points"], reverse=True)
+
+    # Поставяне на студентите в съответните фирми
+    classified = []
+    firm_slots = {firm["name"]: firm["quota"] for firm in firms}
+
+    for student in students_sorted:
         placed = False
-        for choice in student['choices']:
-            if firm_slots.get(choice, 0) > 0:
-                placements.append(f"{student['name']} -> {choice}")
+        for choice in student["choices"]:
+            if firm_slots[choice] > 0:
+                classified.append({"name": student["name"], "firm": choice})
                 firm_slots[choice] -= 1
                 placed = True
                 break
         if not placed:
-            placements.append(f"{student['name']} -> Not Assigned")
-    
-    st.write("### Results")
-    for placement in placements:
-        st.write(placement)
+            classified.append({"name": student["name"], "firm": "Not Assigned"})
 
-# Заглавие на приложението
-st.title("Student-Firm Assignment App")
-
-# Добавяне на фирми и студенти
-st.header("Add Firms")
-add_firm()
-
-st.header("Add Students")
-add_student()
-
-# Бутон за класифициране на студентите
-if st.button("Classify Students"):
-    if not students or not firms:
-        st.error("Please add both students and firms first!")
-    else:
-        classify_students()
-
-# Показване на текущите добавени фирми и студенти
-st.write("### Current Firms")
-for firm in firms:
-    st.write(f"{firm['name']} (Quota: {firm['quota']})")
-
-st.write("### Current Students")
-for student in students:
-    st.write(f"Name: {student['name']}, Points: {student['points']}, Choices: {', '.join(student['choices'])}")
+    # Показване на резултатите
+    st.subheader("Results")
+    for entry in classified:
+        st.write(f"{entry['name']} - Assigned to {entry['firm']}")
