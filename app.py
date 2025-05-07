@@ -1,8 +1,11 @@
 import streamlit as st
 
-# Списъци за съхранение на добавените студенти и фирми
-students = []
-firms = []
+# Инициализация на session_state ако няма данни
+if "firms" not in st.session_state:
+    st.session_state.firms = []
+
+if "students" not in st.session_state:
+    st.session_state.students = []
 
 # Заглавие на приложението
 st.title("Student-Firm Application")
@@ -14,15 +17,15 @@ firm_quota = st.number_input("Enter Quota", min_value=1)
 
 if st.button("Add Firm"):
     if firm_name and firm_quota:
-        firms.append({"name": firm_name, "quota": firm_quota})
+        st.session_state.firms.append({"name": firm_name, "quota": firm_quota})
         st.success(f"Firm {firm_name} added successfully!")
     else:
         st.error("Please enter both Firm Name and Quota.")
 
 # Показване на добавените фирми
-if firms:
+if st.session_state.firms:
     st.subheader("Added Firms")
-    for firm in firms:
+    for firm in st.session_state.firms:
         st.write(f"{firm['name']} - Quota: {firm['quota']}")
 
 # Формата за добавяне на студенти
@@ -31,15 +34,15 @@ student_name = st.text_input("Enter Student Name")
 student_points = st.number_input("Enter Points", min_value=0)
 
 # Падащо меню за избор на фирма за студентите
-if firms:
+if st.session_state.firms:
     student_choices = []
     for i in range(5):  # Предполага се, че студентът може да избере до 5 фирми
-        firm_choice = st.selectbox(f"Select Firm Choice {i+1}", options=[firm["name"] for firm in firms], key=f"choice_{i}")
+        firm_choice = st.selectbox(f"Select Firm Choice {i+1}", options=[firm["name"] for firm in st.session_state.firms], key=f"choice_{i}")
         student_choices.append(firm_choice)
 
 if st.button("Add Student"):
     if student_name and student_points and student_choices:
-        students.append({
+        st.session_state.students.append({
             "name": student_name,
             "points": student_points,
             "choices": student_choices
@@ -49,20 +52,20 @@ if st.button("Add Student"):
         st.error("Please enter Student Name, Points and make selections for at least one Firm.")
 
 # Показване на добавените студенти
-if students:
+if st.session_state.students:
     st.subheader("Added Students")
-    for student in students:
+    for student in st.session_state.students:
         st.write(f"{student['name']} - Points: {student['points']}")
         st.write(f"Choices: {', '.join(student['choices'])}")
 
 # Логика за класиране на студентите
 if st.button("Classify Students"):
     # Сортиране на студентите по точки
-    students_sorted = sorted(students, key=lambda x: x["points"], reverse=True)
+    students_sorted = sorted(st.session_state.students, key=lambda x: x["points"], reverse=True)
 
     # Поставяне на студентите в съответните фирми
     classified = []
-    firm_slots = {firm["name"]: firm["quota"] for firm in firms}
+    firm_slots = {firm["name"]: firm["quota"] for firm in st.session_state.firms}
 
     for student in students_sorted:
         placed = False
