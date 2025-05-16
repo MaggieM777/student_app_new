@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Инициализация на session_state ако няма данни
 if "firms" not in st.session_state:
@@ -52,7 +53,6 @@ if uploaded_file:
             for _, row in df.iterrows():
                 name = row["Име"]
                 points = row["Точки"]
-                # Взимаме колоните за желанията (които започват с "Желание")
                 choices = [row[col] for col in df.columns if col.startswith("Желание") and pd.notna(row[col])]
                 if name and pd.notna(points) and choices:
                     temp_students.append({
@@ -116,10 +116,7 @@ if st.button("Класирай студентите"):
     elif not st.session_state.students:
         st.error("Няма добавени студенти за класиране.")
     else:
-        # Сортиране на студентите по точки низходящо
         students_sorted = sorted(st.session_state.students, key=lambda x: x["points"], reverse=True)
-
-        # Квоти за фирмите
         firm_slots = {firm["name"]: firm["quota"] for firm in st.session_state.firms}
 
         classified = []
@@ -137,3 +134,19 @@ if st.button("Класирай студентите"):
         st.subheader("Резултати от класирането")
         for c in classified:
             st.write(f"{c['name']} - Класиран във фирма: {c['firm']}")
+
+        # Визуализация: Кръгова диаграма на разпределението по фирми
+        st.subheader("Графика: Разпределение по фирми")
+
+        firm_distribution = {}
+        for c in classified:
+            firm_distribution[c["firm"]] = firm_distribution.get(c["firm"], 0) + 1
+
+        labels = list(firm_distribution.keys())
+        sizes = list(firm_distribution.values())
+
+        fig, ax = plt.subplots()
+        ax.pie(sizes, labels=labels, autopct="%1.1f%%", startangle=90)
+        ax.axis("equal")
+
+        st.pyplot(fig)
