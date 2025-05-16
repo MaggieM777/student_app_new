@@ -22,7 +22,6 @@ if st.button("Добави фирма"):
     if firm_name.strip() and firm_quota > 0:
         st.session_state.firms.append({"name": firm_name.strip(), "quota": firm_quota})
         st.success(f"Фирма '{firm_name.strip()}' добавена успешно!")
-        st.experimental_rerun()
     else:
         st.error("Моля, въведете име на фирма и валидна квота.")
 
@@ -69,7 +68,6 @@ if uploaded_file:
                 st.session_state.students.extend(st.session_state.imported_students)
                 st.session_state.imported_students = []
                 st.success(f"Добавени {len(st.session_state.students) - before} студенти.")
-                st.experimental_rerun()
     except Exception as e:
         st.error(f"Грешка при обработка на файла: {e}")
 
@@ -99,7 +97,6 @@ if st.button("Добави студент"):
             "choices": student_choices
         })
         st.success(f"Студентът '{student_name.strip()}' добавен успешно!")
-        st.experimental_rerun()
     else:
         st.error("Моля, въведете име, точки и изберете фирми за всички желания.")
 
