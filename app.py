@@ -36,7 +36,11 @@ uploaded_file = st.file_uploader("Качете Excel файл (.xlsx)", type=["x
 if uploaded_file:
     try:
         df = pd.read_excel(uploaded_file)
-        df.columns = df.columns.str.strip()  # Премахване на излишни интервали
+        # Покажи колоните за диагностика
+        st.write("Колони в Excel файла:", list(df.columns))
+
+        # Изчистване на имена на колони - премахване на интервали и нови редове
+        df.columns = df.columns.str.strip().str.replace('\n', '').str.replace('\r', '').str.replace(r'\s+', ' ', regex=True)
 
         required_columns = {"Име", "Точки"}
         if not required_columns.issubset(df.columns):
@@ -46,7 +50,6 @@ if uploaded_file:
             for _, row in df.iterrows():
                 name = row["Име"]
                 points = row["Точки"]
-                # Събираме желанията (фирмите), които започват с "Желание" и не са празни
                 choices = [row[col] for col in df.columns if col.startswith("Желание") and pd.notna(row[col])]
 
                 if name and pd.notna(points) and choices:
