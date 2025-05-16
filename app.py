@@ -1,5 +1,13 @@
 import streamlit as st
-import pandas as pd
+import pandas as pd  # за Excel импортиране
+
+# Инициализация на session_state ако няма данни
+if "firms" not in st.session_state:
+    st.session_state.firms = []
+
+if "students" not in st.session_state:
+    st.session_state.students = []
+
 
 st.header("Import Students from Excel")
 uploaded_file = st.file_uploader("Upload Excel File", type=["xlsx"])
